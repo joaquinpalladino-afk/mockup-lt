@@ -1,0 +1,53 @@
+
+import * as React from 'react';
+
+export enum TaskType {
+  Relevant = 'Relevant',
+  Maintenance = 'Maintenance',
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  type: TaskType;
+  completed: boolean;
+  dueDate: string | null;
+  priority: string;
+  tagId: string | null;
+  createdAt: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+}
+
+export interface Settings {
+  priorities: string[];
+  onboardingComplete: boolean;
+}
+
+export interface AppState {
+  user: {
+    name: string;
+    avatarUrl: string;
+  };
+  settings: Settings;
+  tags: Tag[];
+  tasks: Task[];
+}
+
+export type Action =
+  | { type: 'SET_STATE'; payload: AppState }
+  | { type: 'COMPLETE_ONBOARDING'; payload: { priorities: string[] } }
+  | { type: 'ADD_TASK'; payload: Task }
+  | { type: 'UPDATE_TASK'; payload: Task }
+  | { type: 'DELETE_TASK'; payload: { id: string } }
+  | { type: 'TOGGLE_TASK_COMPLETION'; payload: { id: string } }
+  | { type: 'ADD_TAG'; payload: Tag };
+
+export interface AppContextType {
+  state: AppState;
+  dispatch: React.Dispatch<Action>;
+}
