@@ -46,6 +46,8 @@ const appReducer = (state: AppState, action: Action): AppState => {
         if (tagExists) return state;
         return { ...state, tags: [...state.tags, action.payload] };
     }
+    case 'SET_SELECTED_DATE':
+      return { ...state, selectedDate: action.payload };
     default:
       return state;
   }
@@ -56,9 +58,8 @@ const getInitialState = (): AppState => {
     const item = window.localStorage.getItem('loomtaskState');
     if (item) {
         const parsed = JSON.parse(item);
-        // Basic validation to ensure we don't crash on malformed localStorage
-        if (parsed.user && parsed.settings && parsed.tags && parsed.tasks) {
-            return parsed;
+        if (parsed.user && parsed.settings && parsed.tags && parsed.tasks && parsed.selectedDate) {
+            return { ...parsed, selectedDate: new Date(parsed.selectedDate) };
         }
     }
   } catch (error) {
@@ -73,6 +74,7 @@ const getInitialState = (): AppState => {
     },
     tags: [],
     tasks: [],
+    selectedDate: new Date(),
   };
 };
 

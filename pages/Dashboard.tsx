@@ -6,6 +6,7 @@ import { TaskType } from '../types';
 import { TaskModal } from '../components/TaskModal';
 import { PlusIcon, ChevronDownIcon, CheckCircleIcon } from '../components/Icons';
 import { TaskItem } from '../components/TaskItem';
+import DateNavigator from '../components/DateNavigator';
 
 // Sub-component for the progress bar
 const ProgressBar: FC<{ value: number }> = ({ value }) => (
@@ -53,7 +54,7 @@ export const Dashboard: React.FC = () => {
             description: '',
             type,
             completed: false,
-            dueDate: null,
+            dueDate: state.selectedDate.toISOString(),
             priority: state.settings.priorities[state.settings.priorities.length - 1] || 'Normal',
             tagId: null,
             createdAt: new Date().toISOString(),
@@ -63,18 +64,20 @@ export const Dashboard: React.FC = () => {
     };
 
     const filteredTasks = useMemo(() => {
+        const selectedDateString = state.selectedDate.toISOString().split('T')[0];
         return state.tasks.filter(task => {
             const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesTag = selectedTagId === 'all' || task.tagId === selectedTagId;
-            return matchesSearch && matchesTag;
+            const matchesDate = task.dueDate ? task.dueDate.split('T')[0] === selectedDateString : false;
+            return matchesSearch && matchesTag && matchesDate;
         });
-    }, [state.tasks, searchTerm, selectedTagId]);
+    }, [state.tasks, searchTerm, selectedTagId, state.selectedDate]);
     
     const progress = useMemo(() => {
-        if (state.tasks.length === 0) return 0;
+        if (filteredTasks.length === 0) return 0;
 
-        const relevantTasks = state.tasks.filter(t => t.type === TaskType.Relevant);
-        const maintenanceTasks = state.tasks.filter(t => t.type === TaskType.Maintenance);
+        const relevantTasks = filteredTasks.filter(t => t.type === TaskType.Relevant);
+        const maintenanceTasks = filteredTasks.filter(t => t.type === TaskType.Maintenance);
 
         let currentProgress = 0;
         
@@ -92,7 +95,7 @@ export const Dashboard: React.FC = () => {
 
         return Math.round(currentProgress);
 
-    }, [state.tasks]);
+    }, [filteredTasks]);
     
     const EmptyState: FC = () => (
       <div className="text-center py-10">
@@ -125,6 +128,8 @@ export const Dashboard: React.FC = () => {
                     className="w-full sm:w-1/3 bg-black/30 border-transparent rounded-md px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#156193] transition-all backdrop-blur-sm"
                 />
             </div>
+
+            <DateNavigator />
 
             <div className="my-6">
                 <ProgressBar value={progress} />

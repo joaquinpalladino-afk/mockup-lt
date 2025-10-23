@@ -36,6 +36,7 @@ export interface AppState {
   settings: Settings;
   tags: Tag[];
   tasks: Task[];
+  selectedDate: Date;
 }
 
 export type Action =
@@ -45,7 +46,8 @@ export type Action =
   | { type: 'UPDATE_TASK'; payload: Task }
   | { type: 'DELETE_TASK'; payload: { id: string } }
   | { type: 'TOGGLE_TASK_COMPLETION'; payload: { id: string } }
-  | { type: 'ADD_TAG'; payload: Tag };
+  | { type: 'ADD_TAG'; payload: Tag }
+  | { type: 'SET_SELECTED_DATE'; payload: Date };
 
 export interface AppContextType {
   state: AppState;
