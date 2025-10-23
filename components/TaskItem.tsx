@@ -1,4 +1,5 @@
 import React, { FC, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import type { Task } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { CalendarIcon, TagIcon } from './Icons';
@@ -57,20 +58,33 @@ export const TaskItem: FC<TaskItemProps> = ({ task, onEdit, style }) => {
         return { text, colorClass };
     }, [task.dueDate]);
 
+    const variants = {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, height: 0, transition: { duration: 0.3 } },
+        completed: { opacity: 0.5, transition: { duration: 0.3 } },
+        incomplete: { opacity: 1, transition: { duration: 0.3 } },
+    };
+
     return (
-        <div 
-          style={style}
-          className={`bg-[#444444]/70 p-3 rounded-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl cursor-pointer animate-fade-in-up backdrop-blur-sm border border-white/10 ${task.completed ? 'opacity-50' : ''}`}
-          onClick={() => onEdit(task.id)}
+        <motion.div
+            style={style}
+            className={`bg-[#444444]/70 p-3 rounded-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl cursor-pointer backdrop-blur-sm border border-white/10`}
+            onClick={() => onEdit(task.id)}
+            variants={variants}
+            initial="initial"
+            animate={task.completed ? "completed" : "incomplete"}
+            exit="exit"
+            layout
         >
             <div className="flex items-start space-x-3">
                 <div onClick={handleToggle} className="pt-1">
-                  <input
-                      type="checkbox"
-                      checked={task.completed}
-                      readOnly
-                      className="form-checkbox h-5 w-5 rounded-sm bg-gray-700 border-gray-600 text-[#156193] focus:ring-2 focus:ring-offset-0 focus:ring-offset-transparent focus:ring-[#156193] cursor-pointer"
-                  />
+                    <input
+                        type="checkbox"
+                        checked={task.completed}
+                        readOnly
+                        className="form-checkbox h-5 w-5 rounded-sm bg-gray-700 border-gray-600 text-[#156193] focus:ring-2 focus:ring-offset-0 focus:ring-offset-transparent focus:ring-[#156193] cursor-pointer"
+                    />
                 </div>
                 <span className={`flex-grow pt-0.5 ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
                     {task.title}
@@ -96,6 +110,7 @@ export const TaskItem: FC<TaskItemProps> = ({ task, onEdit, style }) => {
                     )}
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };
+

@@ -1,19 +1,38 @@
 import React, { useState, useMemo, FC } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAppContext } from '../context/AppContext';
 import type { Task } from '../types';
 import { TaskType } from '../types';
 import { TaskModal } from '../components/TaskModal';
-import { PlusIcon, ChevronDownIcon } from '../components/Icons';
+import { PlusIcon, ChevronDownIcon, CheckCircleIcon } from '../components/Icons';
 import { TaskItem } from '../components/TaskItem';
 
 // Sub-component for the progress bar
 const ProgressBar: FC<{ value: number }> = ({ value }) => (
-    <div className="w-full bg-black/30 rounded-full h-4 my-6 overflow-hidden backdrop-blur-sm">
-        <div
-            className="bg-[#156193] h-4 rounded-full transition-all duration-700 ease-out"
-            style={{ width: `${value}%` }}
-        ></div>
+    <div className="flex items-center gap-4">
+        <div className="w-full bg-black/30 rounded-full h-4 overflow-hidden backdrop-blur-sm">
+            <motion.div
+                className="bg-[#156193] h-4 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${value}%` }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+            />
+        </div>
+        <span className="text-white font-semibold">{value}%</span>
     </div>
+);
+
+const CompletionCelebration = () => (
+    <motion.div
+        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="flex flex-col items-center justify-center p-6 bg-green-500/20 rounded-lg my-4 backdrop-blur-sm border border-green-500/50"
+    >
+        <CheckCircleIcon className="h-12 w-12 text-green-400 mb-2" />
+        <h3 className="text-xl font-bold text-white">¡Felicidades!</h3>
+        <p className="text-green-300">Has completado todas tus tareas.</p>
+    </motion.div>
 );
 
 // Main Dashboard Component
@@ -107,7 +126,10 @@ export const Dashboard: React.FC = () => {
                 />
             </div>
 
-            <ProgressBar value={progress} />
+            <div className="my-6">
+                <ProgressBar value={progress} />
+                {progress === 100 && <CompletionCelebration />}
+            </div>
 
             {/* Task Columns */}
             <div className="flex flex-col lg:flex-row lg:space-x-8 space-y-8 lg:space-y-0">
@@ -127,13 +149,14 @@ export const Dashboard: React.FC = () => {
                                 />
                             </div>
                             <div className="pt-2 space-y-3">
-                                {filteredTasks.filter(t => t.type === type).length === 0 ? <EmptyState /> : 
-                                  filteredTasks.filter(t => t.type === type)
-                                    .sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                                    .map((task, index) => (
-                                      <TaskItem key={task.id} task={task} onEdit={setEditingTaskId} style={{ animationDelay: `${index * 50}ms` }} />
-                                  ))
-                                }
+                                <AnimatePresence>
+                                    {filteredTasks.filter(t => t.type === type).length === 0 ? <EmptyState /> : 
+                                    filteredTasks.filter(t => t.type === type)
+                                        .sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                                        .map((task, index) => (
+                                        <TaskItem key={task.id} task={task} onEdit={setEditingTaskId} style={{ animationDelay: `${index * 50}ms` }} />
+                                    ))}
+                                </AnimatePresence>
                             </div>
                         </div>
                     </div>
