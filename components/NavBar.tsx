@@ -17,7 +17,10 @@ export const NavBar: React.FC = () => {
   return (
     <nav className="bg-[#1E1E1E] text-[#E0E0E0] p-4 flex justify-between items-center border-b border-[#444444] sticky top-0 z-30">
       <div className="text-2xl font-bold tracking-wider">
-        <Link to="/" className="transition-colors hover:text-[#156193]">Loomtask</Link>
+        <Link to="/" className="flex items-center gap-3 transition-colors hover:text-[#156193]">
+          <img src="/logo.png" alt="Loomtask logo" className="h-8 w-auto" />
+          Loomtask
+        </Link>
       </div>
       <div className="flex items-center space-x-4 md:space-x-6">
         <Link to="/notifications" className="relative transition-transform duration-200 hover:scale-110">
