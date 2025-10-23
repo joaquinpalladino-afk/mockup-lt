@@ -2,7 +2,7 @@ import React, { useState, useMemo, FC } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAppContext } from '../context/AppContext';
 import type { Task } from '../types';
-import { TaskType } from '../types';
+import { TaskType, Repeat } from '../types';
 import { TaskModal } from '../components/TaskModal';
 import { PlusIcon, ChevronDownIcon, CheckCircleIcon } from '../components/Icons';
 import { TaskItem } from '../components/TaskItem';
@@ -44,9 +44,28 @@ export const Dashboard: React.FC = () => {
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
     const [newTaskTitle, setNewTaskTitle] = useState<{ [key in TaskType]: string }>({ Relevant: '', Maintenance: '' });
 
+    const dailyTaskCounts = useMemo(() => {
+        const selectedDateString = state.selectedDate.toISOString().split('T')[0];
+        const tasksForSelectedDate = state.tasks.filter(task => task.dueDate && task.dueDate.split('T')[0] === selectedDateString);
+        return {
+            [TaskType.Relevant]: tasksForSelectedDate.filter(t => t.type === TaskType.Relevant).length,
+            [TaskType.Maintenance]: tasksForSelectedDate.filter(t => t.type === TaskType.Maintenance).length,
+        };
+    }, [state.tasks, state.selectedDate]);
+
     const handleAddTask = (type: TaskType) => {
         const title = newTaskTitle[type].trim();
         if (!title) return;
+
+        if (type === TaskType.Relevant && dailyTaskCounts[TaskType.Relevant] >= 3) {
+            alert('Limite diario de tareas Relevantes alcanzado');
+            return;
+        }
+
+        if (type === TaskType.Maintenance && dailyTaskCounts[TaskType.Maintenance] >= 7) {
+            alert('Limite diario de tareas de Mantenimiento alcanzado');
+            return;
+        }
 
         const newTask: Task = {
             id: `task-${Date.now()}`,
@@ -58,6 +77,7 @@ export const Dashboard: React.FC = () => {
             priority: state.settings.priorities[state.settings.priorities.length - 1] || 'Normal',
             tagId: null,
             createdAt: new Date().toISOString(),
+            repeat: Repeat.None,
         };
         dispatch({ type: 'ADD_TASK', payload: newTask });
         setNewTaskTitle(prev => ({ ...prev, [type]: '' }));
@@ -146,11 +166,19 @@ export const Dashboard: React.FC = () => {
                                 <PlusIcon className="h-5 w-5 text-gray-400"/>
                                 <input
                                     type="text"
-                                    placeholder={`+ Añadir una tarea ${type === TaskType.Relevant ? 'Relevante' : 'de Mantenimiento'}`}
+                                    placeholder={
+                                        type === TaskType.Relevant && dailyTaskCounts[TaskType.Relevant] >= 3 ? "Límite diario alcanzado" :
+                                        type === TaskType.Maintenance && dailyTaskCounts[TaskType.Maintenance] >= 7 ? "Límite diario alcanzado" :
+                                        `+ Añadir una tarea ${type === TaskType.Relevant ? 'Relevante' : 'de Mantenimiento'}`
+                                    }
                                     value={newTaskTitle[type]}
                                     onChange={e => setNewTaskTitle(prev => ({...prev, [type]: e.target.value}))}
                                     onKeyDown={e => e.key === 'Enter' && handleAddTask(type)}
-                                    className="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none"
+                                    disabled={
+                                        (type === TaskType.Relevant && dailyTaskCounts[TaskType.Relevant] >= 3) ||
+                                        (type === TaskType.Maintenance && dailyTaskCounts[TaskType.Maintenance] >= 7)
+                                    }
+                                    className="w-full bg-transparent text-white placeholder-gray-400 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                 />
                             </div>
                             <div className="pt-2 space-y-3">

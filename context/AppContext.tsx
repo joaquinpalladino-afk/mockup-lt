@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import type { AppState, Action, AppContextType, Tag, Task } from '../types';
-import { TaskType } from '../types';
+import { TaskType, Repeat } from '../types';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -32,15 +31,36 @@ const appReducer = (state: AppState, action: Action): AppState => {
         ...state,
         tasks: state.tasks.filter((task) => task.id !== action.payload.id),
       };
-    case 'TOGGLE_TASK_COMPLETION':
-      return {
-        ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === action.payload.id
-            ? { ...task, completed: !task.completed }
-            : task
-        ),
-      };
+    case 'TOGGLE_TASK_COMPLETION': {
+      let newTasks = [...state.tasks];
+      const taskIndex = newTasks.findIndex(task => task.id === action.payload.id);
+      if (taskIndex === -1) return state;
+
+      const originalTask = newTasks[taskIndex];
+      const completed = !originalTask.completed;
+
+      newTasks[taskIndex] = { ...originalTask, completed };
+
+      if (completed && originalTask.repeat && originalTask.repeat !== Repeat.None) {
+        const newDueDate = new Date(originalTask.dueDate!);
+        if (originalTask.repeat === Repeat.Daily) {
+          newDueDate.setDate(newDueDate.getDate() + 1);
+        } else if (originalTask.repeat === Repeat.Weekly) {
+          newDueDate.setDate(newDueDate.getDate() + 7);
+        }
+
+        const repeatedTask: Task = {
+          ...originalTask,
+          id: `task-${Date.now()}`,
+          completed: false,
+          dueDate: newDueDate.toISOString(),
+          createdAt: new Date().toISOString(),
+        };
+        newTasks.push(repeatedTask);
+      }
+
+      return { ...state, tasks: newTasks };
+    }
     case 'ADD_TAG': {
         const tagExists = state.tags.some(tag => tag.name.toLowerCase() === action.payload.name.toLowerCase());
         if (tagExists) return state;

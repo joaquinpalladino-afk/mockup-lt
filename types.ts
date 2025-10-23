@@ -1,9 +1,14 @@
-
 import * as React from 'react';
 
 export enum TaskType {
   Relevant = 'Relevant',
   Maintenance = 'Maintenance',
+}
+
+export enum Repeat {
+    None = 'None',
+    Daily = 'Daily',
+    Weekly = 'Weekly',
 }
 
 export interface Task {
@@ -16,6 +21,7 @@ export interface Task {
   priority: string;
   tagId: string | null;
   createdAt: string;
+  repeat: Repeat;
 }
 
 export interface Tag {

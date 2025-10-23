@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import type { Task, Tag } from '../types';
+import { Repeat } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { TrashIcon } from './Icons';
 
@@ -18,6 +19,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose }) => {
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('');
+  const [repeat, setRepeat] = useState<Repeat>(Repeat.None);
   
   useEffect(() => {
     if (task) {
@@ -28,6 +30,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose }) => {
       setSelectedTagId(task.tagId);
       setDueDate(task.dueDate ? task.dueDate.substring(0, 16) : '');
       setPriority(task.priority);
+      setRepeat(task.repeat || Repeat.None);
     }
   }, [task, state.tags]);
 
@@ -55,6 +58,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose }) => {
       tagId: finalTagId,
       dueDate: dueDate || null,
       priority,
+      repeat,
     };
     dispatch({ type: 'UPDATE_TASK', payload: updatedTask });
     onClose();
@@ -103,6 +107,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose }) => {
                 <label className="block text-sm font-medium text-gray-400 mb-1">Prioridad</label>
                 <select value={priority} onChange={(e) => setPriority(e.target.value)} className="w-full bg-[#1E1E1E] rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#156193] appearance-none">
                     {state.settings.priorities.map(p => <option key={p} value={p}>{p}</option>)}
+                </select>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Repetir</label>
+                <select value={repeat} onChange={(e) => setRepeat(e.target.value as Repeat)} className="w-full bg-[#1E1E1E] rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#156193] appearance-none">
+                    {Object.values(Repeat).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
             </div>
             <div className="md:col-span-2">
