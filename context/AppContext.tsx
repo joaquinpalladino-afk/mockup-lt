@@ -53,7 +53,7 @@ const appReducer = (state: AppState, action: Action): AppState => {
           ...originalTask,
           id: `task-${Date.now()}`,
           completed: false,
-          dueDate: newDueDate.toISOString(),
+          dueDate: newDueDate.toLocaleDateString('en-CA'),
           createdAt: new Date().toISOString(),
         };
         newTasks.push(repeatedTask);

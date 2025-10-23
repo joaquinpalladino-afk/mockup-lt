@@ -45,7 +45,7 @@ export const Dashboard: React.FC = () => {
     const [newTaskTitle, setNewTaskTitle] = useState<{ [key in TaskType]: string }>({ Relevant: '', Maintenance: '' });
 
     const dailyTaskCounts = useMemo(() => {
-        const selectedDateString = state.selectedDate.toISOString().split('T')[0];
+        const selectedDateString = state.selectedDate.toLocaleDateString('en-CA');
         const tasksForSelectedDate = state.tasks.filter(task => task.dueDate && task.dueDate.split('T')[0] === selectedDateString);
         return {
             [TaskType.Relevant]: tasksForSelectedDate.filter(t => t.type === TaskType.Relevant).length,
@@ -73,7 +73,7 @@ export const Dashboard: React.FC = () => {
             description: '',
             type,
             completed: false,
-            dueDate: state.selectedDate.toISOString(),
+            dueDate: state.selectedDate.toLocaleDateString('en-CA'),
             priority: state.settings.priorities[state.settings.priorities.length - 1] || 'Normal',
             tagId: null,
             createdAt: new Date().toISOString(),
@@ -84,7 +84,7 @@ export const Dashboard: React.FC = () => {
     };
 
     const filteredTasks = useMemo(() => {
-        const selectedDateString = state.selectedDate.toISOString().split('T')[0];
+        const selectedDateString = state.selectedDate.toLocaleDateString('en-CA');
         return state.tasks.filter(task => {
             const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesTag = selectedTagId === 'all' || task.tagId === selectedTagId;

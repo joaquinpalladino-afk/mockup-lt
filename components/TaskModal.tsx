@@ -20,6 +20,16 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose }) => {
   const [dueDate, setDueDate] = useState('');
   const [priority, setPriority] = useState('');
   const [repeat, setRepeat] = useState<Repeat>(Repeat.None);
+  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
+
+  const filteredTags = useMemo(() => {
+    if (!tagInput) {
+      return state.tags;
+    }
+    return state.tags.filter(tag =>
+      tag.name.toLowerCase().includes(tagInput.toLowerCase())
+    );
+  }, [tagInput, state.tags]);
   
   useEffect(() => {
     if (task) {
@@ -90,18 +100,39 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose }) => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div>
+            <div className="relative">
                 <label className="block text-sm font-medium text-gray-400 mb-1">Tag (Proyecto)</label>
                 <input
                     type="text"
                     value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    list="tags-datalist"
+                    onChange={(e) => {
+                        setTagInput(e.target.value);
+                        setSelectedTagId(null);
+                    }}
+                    onFocus={() => setShowTagSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowTagSuggestions(false), 150)}
                     className="w-full bg-[#1E1E1E] rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#156193]"
+                    autoComplete="off"
                 />
-                <datalist id="tags-datalist">
-                    {state.tags.map(tag => <option key={tag.id} value={tag.name} />)}
-                </datalist>
+                {showTagSuggestions && filteredTags.length > 0 && (
+                    <div className="absolute z-10 w-full bg-[#2d2d2d] rounded-md mt-1 shadow-lg">
+                        <ul className="max-h-40 overflow-y-auto py-1">
+                            {filteredTags.map(tag => (
+                                <li
+                                    key={tag.id}
+                                    className="px-3 py-2 cursor-pointer hover:bg-[#4a4a4a]"
+                                    onMouseDown={() => {
+                                        setTagInput(tag.name);
+                                        setSelectedTagId(tag.id);
+                                        setShowTagSuggestions(false);
+                                    }}
+                                >
+                                    {tag.name}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">Prioridad</label>
