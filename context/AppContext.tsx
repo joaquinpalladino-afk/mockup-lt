@@ -41,19 +41,45 @@ const appReducer = (state: AppState, action: Action): AppState => {
 
       newTasks[taskIndex] = { ...originalTask, completed };
 
+      // When a recurring task is completed, create a new task for the next occurrence.
       if (completed && originalTask.repeat && originalTask.repeat !== Repeat.None) {
-        const newDueDate = new Date(originalTask.dueDate!);
+        
+        // Ensure we have a valid due date to work from.
+        if (!originalTask.dueDate) return { ...state, tasks: newTasks };
+
+        const hasTime = originalTask.dueDate.includes('T');
+        
+        // new Date() can be tricky with YYYY-MM-DD format (parses as UTC).
+        // To handle it safely, we can append time to ensure it's parsed as local time.
+        const dateStringToParse = hasTime ? originalTask.dueDate : `${originalTask.dueDate}T00:00`;
+        const newDueDate = new Date(dateStringToParse);
+
         if (originalTask.repeat === Repeat.Daily) {
           newDueDate.setDate(newDueDate.getDate() + 1);
         } else if (originalTask.repeat === Repeat.Weekly) {
           newDueDate.setDate(newDueDate.getDate() + 7);
         }
 
+        let newDueDateString: string;
+        const year = newDueDate.getFullYear();
+        const month = String(newDueDate.getMonth() + 1).padStart(2, '0');
+        const day = String(newDueDate.getDate()).padStart(2, '0');
+
+        if (hasTime) {
+            // Format back to YYYY-MM-DDTHH:mm to match datetime-local input
+            const hours = String(newDueDate.getHours()).padStart(2, '0');
+            const minutes = String(newDueDate.getMinutes()).padStart(2, '0');
+            newDueDateString = `${year}-${month}-${day}T${hours}:${minutes}`;
+        } else {
+            // Format back to YYYY-MM-DD
+            newDueDateString = `${year}-${month}-${day}`;
+        }
+
         const repeatedTask: Task = {
           ...originalTask,
           id: `task-${Date.now()}`,
           completed: false,
-          dueDate: newDueDate.toLocaleDateString('en-CA'),
+          dueDate: newDueDateString,
           createdAt: new Date().toISOString(),
         };
         newTasks.push(repeatedTask);
@@ -79,7 +105,7 @@ const getInitialState = (): AppState => {
     if (item) {
         const parsed = JSON.parse(item);
         if (parsed.user && parsed.settings && parsed.tags && parsed.tasks && parsed.selectedDate) {
-            return { ...parsed, selectedDate: new Date(parsed.selectedDate) };
+            return { ...parsed, selectedDate: new Date() };
         }
     }
   } catch (error) {
