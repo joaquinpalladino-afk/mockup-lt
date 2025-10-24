@@ -1,14 +1,14 @@
 import * as React from 'react';
 
 export enum TaskType {
-  Relevant = 'Relevant',
-  Maintenance = 'Maintenance',
+  Relevant = 'Relevantes',
+  Maintenance = 'De Mantenimiento',
 }
 
 export enum Repeat {
-    None = 'None',
-    Daily = 'Daily',
-    Weekly = 'Weekly',
+    None = 'Nunca',
+    Daily = 'Diariamente',
+    Weekly = 'Semanalmente',
 }
 
 export interface Task {

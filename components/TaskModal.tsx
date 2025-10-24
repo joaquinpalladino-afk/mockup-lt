@@ -101,7 +101,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ taskId, onClose }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="relative">
-                <label className="block text-sm font-medium text-gray-400 mb-1">Tag (Proyecto)</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Etiqueta (Proyecto)</label>
                 <input
                     type="text"
                     value={tagInput}
